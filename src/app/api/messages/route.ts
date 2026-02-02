@@ -297,8 +297,8 @@ async function getEnhancedTranslation(content: string, sourceLanguage: string, t
   console.log(`🔄 Enhanced Translation: "${content}" from ${sourceLanguage} to ${targetLanguage}`)
 
   // Import OpenAI service dynamically to avoid circular dependencies
-  const { getOpenAITranslationService } = await import('@/services/OpenAITranslationService')
-  const aiService = getOpenAITranslationService()
+  // const { getOpenAITranslationService } = await import('@/services/OpenAITranslationService')
+  // const aiService = getOpenAITranslationService()
 
   // Step 1: Detect actual language of content (don't trust user preference)
   const languageDetector = new LanguageDetectorImpl()
@@ -328,27 +328,7 @@ async function getEnhancedTranslation(content: string, sourceLanguage: string, t
     return content
   }
 
-  // Step 4: Try OpenAI AI translation for romanized content (primary for semantic translation)
-  if (aiService.isAvailable()) {
-    try {
-      console.log(`🤖 Using OpenAI GPT for translation...`)
-
-      // Get protected terms from glossary
-      const protectedTerms = getDefaultProtectedTerms()
-
-      const result = await aiService.translateRomanized(content, targetLanguage as any, protectedTerms)
-
-      if (result.translatedText && result.translatedText !== content) {
-        console.log(`✅ OpenAI translation complete: "${content}" -> "${result.translatedText}"`)
-        console.log(`   Detected: ${result.detectedLanguage}${result.isRomanized ? ' (Romanized)' : ''}, Confidence: ${result.confidence}`)
-        return result.translatedText
-      }
-    } catch (error) {
-      console.warn('OpenAI translation failed, falling back to phrase database:', error)
-    }
-  }
-
-  // Step 5: Fallback to context-based translation with phrase database
+  // Step 4: Fallback to context-based translation with phrase database
   const translation = await performContextBasedTranslation(content, sourceLanguage, targetLanguage)
 
   console.log(`✅ Translation complete: "${content}" -> "${translation}"`)

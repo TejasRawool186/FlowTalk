@@ -145,4 +145,49 @@ export class MongoCommunityService {
       throw error
     }
   }
+
+  /**
+   * Get all communities (for discovery)
+   */
+  async getAllCommunities(): Promise<Community[]> {
+    try {
+      const db = await getDatabase()
+
+      const communities = await db.collection('communities')
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray()
+
+      return communities.map(c => ({
+        id: c._id.toString(),
+        name: c.name,
+        description: c.description,
+        createdBy: c.createdBy.toString(),
+        createdAt: c.createdAt,
+        memberCount: c.members?.length || 0
+      }))
+    } catch (error) {
+      console.error('Error getting all communities:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Check if user is member of a community
+   */
+  async isUserMember(communityId: string, userId: string): Promise<boolean> {
+    try {
+      const db = await getDatabase()
+
+      const community = await db.collection('communities').findOne({
+        _id: new ObjectId(communityId),
+        members: new ObjectId(userId)
+      })
+
+      return !!community
+    } catch (error) {
+      console.error('Error checking membership:', error)
+      return false
+    }
+  }
 }

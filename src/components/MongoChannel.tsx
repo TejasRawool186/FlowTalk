@@ -11,6 +11,7 @@ interface ChannelProps {
   channel: ChannelType
   currentUserId: string
   className?: string
+  isDirectMessage?: boolean
 }
 
 export function MongoChannel({ channel, currentUserId, className }: ChannelProps) {
@@ -24,7 +25,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
 
   useEffect(() => {
     loadMessages()
-    
+
     // Start polling for new messages every 2 seconds
     pollIntervalRef.current = setInterval(() => {
       loadMessages(false) // Don't show loading state for polling
@@ -47,26 +48,26 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
         setLoading(true)
       }
       setError(null)
-      
+
       const response = await fetch(`/api/messages?channelId=${channel.id}&limit=50`)
       if (!response.ok) {
         throw new Error('Failed to load messages')
       }
-      
+
       const data = await response.json()
       const newMessages = (data.messages || []).map((msg: any) => ({
         ...msg,
         timestamp: new Date(msg.timestamp) // Convert string to Date object
       }))
-      
+
       // Proper message deduplication by comparing message IDs and content
       setMessages(prevMessages => {
         // Create a map of existing messages by ID
         const existingMessagesMap = new Map(prevMessages.map(msg => [msg.id, msg]))
-        
+
         // Check if we have new messages or updates
         let hasChanges = false
-        
+
         // Check if the number of messages changed
         if (newMessages.length !== prevMessages.length) {
           hasChanges = true
@@ -74,15 +75,15 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
           // Check if any message content or translations changed
           for (const newMsg of newMessages) {
             const existingMsg = existingMessagesMap.get(newMsg.id)
-            if (!existingMsg || 
-                existingMsg.content !== newMsg.content ||
-                JSON.stringify(existingMsg.translations) !== JSON.stringify(newMsg.translations)) {
+            if (!existingMsg ||
+              existingMsg.content !== newMsg.content ||
+              JSON.stringify(existingMsg.translations) !== JSON.stringify(newMsg.translations)) {
               hasChanges = true
               break
             }
           }
         }
-        
+
         return hasChanges ? newMessages : prevMessages
       })
     } catch (err: any) {
@@ -119,7 +120,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
         ...data.message,
         timestamp: new Date(data.message.timestamp) // Convert string to Date object
       }
-      
+
       // Add the new message to the list immediately for instant feedback
       setMessages(prev => {
         // Check if message already exists to avoid duplicates
@@ -129,7 +130,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
         }
         return [...prev, newMessage]
       })
-      
+
       // Also trigger a refresh to get any translations that might have been added
       setTimeout(() => {
         loadMessages(false)
@@ -144,7 +145,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
     try {
       setClearing(true)
       setError(null)
-      
+
       const response = await fetch(`/api/messages?channelId=${channel.id}`, {
         method: 'DELETE'
       })
@@ -155,11 +156,11 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
 
       const data = await response.json()
       console.log(`Cleared ${data.deletedCount} messages`)
-      
+
       // Clear messages from UI immediately
       setMessages([])
       setShowClearConfirm(false)
-      
+
       // Refresh to confirm
       setTimeout(() => {
         loadMessages(false)
@@ -202,7 +203,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
           <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
             <Settings className="w-4 h-4" />
           </button>
-          <button 
+          <button
             onClick={() => setShowClearConfirm(true)}
             className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
             title="Clear all messages"
@@ -258,7 +259,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
             </div>
           </div>
         )}
-        
+
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">

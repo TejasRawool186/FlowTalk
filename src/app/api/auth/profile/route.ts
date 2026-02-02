@@ -28,7 +28,7 @@ export async function PUT(request: NextRequest) {
     // Update user profile
     const result = await db.collection('users').findOneAndUpdate(
       { _id: new ObjectId(decoded.id) },
-      { 
+      {
         $set: {
           ...updates,
           updatedAt: new Date()
@@ -49,7 +49,9 @@ export async function PUT(request: NextRequest) {
         id: result._id.toString(),
         email: result.email,
         username: result.username,
-        primaryLanguage: result.primaryLanguage
+        primaryLanguage: result.primaryLanguage,
+        avatar: result.avatar,
+        status: result.status
       }
     })
   } catch (error: any) {

@@ -22,6 +22,8 @@ export interface UserProfile {
   id: string
   username: string
   primaryLanguage: string
+  avatar?: string
+  status?: string
   createdAt: Date
 }
 
@@ -59,4 +61,12 @@ export type LanguageCode = string
 export interface Subscription {
   id: string
   unsubscribe: () => void
+}
+
+export interface Conversation {
+  id: string
+  participants: string[] // User IDs
+  participantsData?: UserProfile[] // Hydrated user data
+  lastMessageAt: Date
+  createdAt: Date
 }

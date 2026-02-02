@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
         id: user._id.toString(),
         email: user.email,
         username: user.username,
-        primaryLanguage: user.primaryLanguage
+        primaryLanguage: user.primaryLanguage,
+        avatar: user.avatar,
+        status: user.status
       }
     })
   } catch (error: any) {

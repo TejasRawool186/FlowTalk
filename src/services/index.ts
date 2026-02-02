@@ -1,7 +1,9 @@
-// MongoDB-based service factory and exports
+// MongoDB-based service factory and exports - updated
+
 
 import { MongoMessageService } from './MongoMessageService'
 import { MongoCommunityService } from './MongoCommunityService'
+import { MongoConversationService } from './MongoConversationService'
 import { LanguageDetectorImpl } from './LanguageDetector'
 import { GlossaryManagerImpl } from './GlossaryManager'
 import { TranslationCacheImpl } from './TranslationCache'
@@ -11,6 +13,7 @@ import { MessageService, LanguageDetector, GlossaryManager, TranslationCache, Tr
 // Service instances (singletons)
 let messageServiceInstance: MessageService | null = null
 let communityServiceInstance: MongoCommunityService | null = null
+let conversationServiceInstance: MongoConversationService | null = null
 let languageDetectorInstance: LanguageDetector | null = null
 let glossaryManagerInstance: GlossaryManager | null = null
 let translationCacheInstance: TranslationCache | null = null
@@ -34,6 +37,16 @@ export function getCommunityService(): MongoCommunityService {
     communityServiceInstance = new MongoCommunityService()
   }
   return communityServiceInstance
+}
+
+/**
+ * Get ConversationService instance (singleton) - MongoDB-based
+ */
+export function getConversationService(): MongoConversationService {
+  if (!conversationServiceInstance) {
+    conversationServiceInstance = new MongoConversationService()
+  }
+  return conversationServiceInstance
 }
 
 /**
@@ -82,6 +95,7 @@ export * from './interfaces'
 // Export MongoDB service implementations
 export { MongoMessageService } from './MongoMessageService'
 export { MongoCommunityService } from './MongoCommunityService'
+export { MongoConversationService } from './MongoConversationService'
 
 // Export other service implementations
 export { LanguageDetectorImpl } from './LanguageDetector'
