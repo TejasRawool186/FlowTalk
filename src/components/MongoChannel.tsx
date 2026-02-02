@@ -12,9 +12,10 @@ interface ChannelProps {
   currentUserId: string
   className?: string
   isDirectMessage?: boolean
+  onViewProfile?: (userId: string) => void
 }
 
-export function MongoChannel({ channel, currentUserId, className }: ChannelProps) {
+export function MongoChannel({ channel, currentUserId, className, onViewProfile }: ChannelProps) {
   const [messages, setMessages] = useState<MessageType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -98,7 +99,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
     }
   }
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, attachment?: any) => {
     try {
       const response = await fetch('/api/messages', {
         method: 'POST',
@@ -108,6 +109,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
         body: JSON.stringify({
           channelId: channel.id,
           content,
+          attachment
         }),
       })
 
@@ -279,6 +281,7 @@ export function MongoChannel({ channel, currentUserId, className }: ChannelProps
                 key={message.id}
                 message={message}
                 currentUserId={currentUserId}
+                onViewProfile={onViewProfile}
               />
             ))}
             <div ref={messagesEndRef} />

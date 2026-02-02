@@ -48,48 +48,47 @@ export async function GET(request: NextRequest) {
     // Add translations for messages that need them
     const messagesWithTranslations = await Promise.all(
       messages.map(async (message) => {
-        // Skip translation if it's the user's own message
-        if (message.senderId === decoded.id) {
-          return message
-        }
-
-        // Check if translation already exists
-        const existingTranslation = message.translations?.find(t => t.targetLanguage === userLanguage)
-        if (existingTranslation) {
-          return message
-        }
-
-        // Get translation from database if it exists
-        const messageDoc = await db.collection('messages').findOne({ _id: new ObjectId(message.id) })
-        const dbTranslation = messageDoc?.translations?.find((t: any) => t.targetLanguage === userLanguage)
-
-        if (dbTranslation) {
-          return {
-            ...message,
-            translations: [{
-              messageId: message.id,
-              targetLanguage: userLanguage,
-              translatedContent: dbTranslation.translatedContent,
-              createdAt: dbTranslation.createdAt
-            }]
-          }
-        }
-
-        // Create translation if it doesn't exist
         try {
-          const translationEngine = getTranslationEngine()
-          let translatedContent: string
+          // Skip translation if it's the user's own message
+          if (message.senderId === decoded.id) {
+            return message
+          }
 
+          // Check if translation already exists
+          const existingTranslation = message.translations?.find(t => t.targetLanguage === userLanguage)
+          if (existingTranslation) {
+            return message
+          }
+
+          // Get translation from database if it exists
+          const messageDoc = await db.collection('messages').findOne({ _id: new ObjectId(message.id) })
+          const dbTranslation = messageDoc?.translations?.find((t: any) => t.targetLanguage === userLanguage)
+
+          if (dbTranslation) {
+            return {
+              ...message,
+              translations: [{
+                messageId: message.id,
+                targetLanguage: userLanguage,
+                translatedContent: dbTranslation.translatedContent,
+                createdAt: dbTranslation.createdAt
+              }]
+            }
+          }
+
+          // Create translation if it doesn't exist
+          let translatedContent: string
           try {
+            const translationEngine = getTranslationEngine()
+
             translatedContent = await translationEngine.translateText(
               message.content,
               message.sourceLanguage as any,
               userLanguage as any
             )
           } catch (translationError) {
-            console.warn('Translation API failed, using enhanced translation:', translationError)
-            // Use enhanced translation system
-            translatedContent = await getEnhancedTranslation(message.content, message.sourceLanguage, userLanguage)
+            console.warn('Translation API failed:', translationError)
+            return message // Return original message if translation fails
           }
 
           // Store translation in database
@@ -151,17 +150,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { channelId, content } = await request.json()
+    const { channelId, content, attachment } = await request.json()
 
-    if (!channelId || !content) {
+    if (!channelId || (!content && !attachment)) {
       return NextResponse.json(
-        { error: 'Channel ID and content are required' },
+        { error: 'Channel ID and content (or attachment) are required' },
         { status: 400 }
       )
     }
 
+    // Validate attachment size if present (double check limit)
+    if (attachment && attachment.size > 2 * 1024 * 1024) { // 2MB hard limit
+      return NextResponse.json(
+        { error: 'Attachment too large (max 2MB)' },
+        { status: 413 }
+      )
+    }
+
     const messageService = getMessageService()
-    const message = await messageService.createMessage(channelId, content, decoded.id)
+    const message = await messageService.createMessage(
+      channelId,
+      content || '',
+      decoded.id,
+      undefined,
+      attachment
+    )
 
     // Get all users in the channel to determine what languages to translate to
     const db = await getDatabase()
@@ -202,9 +215,8 @@ export async function POST(request: NextRequest) {
                   targetLang as any
                 )
               } catch (translationError) {
-                console.warn(`Translation API failed for ${targetLang}, using enhanced translation:`, translationError)
-                // Use enhanced translation system
-                translatedContent = await getEnhancedTranslation(message.content, message.sourceLanguage, targetLang)
+                console.warn(`Translation API failed for ${targetLang}:`, translationError)
+                return null
               }
 
               return {
@@ -233,7 +245,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ message })
+    // Fetched user details to populate response
+    const sender = await db.collection('users').findOne({ _id: new ObjectId(decoded.id) })
+
+    // Return message with populated sender details
+    const messageWithSender = {
+      ...message,
+      senderName: sender?.username || 'Unknown User',
+      senderAvatar: sender?.avatar
+    }
+
+    return NextResponse.json({ message: messageWithSender })
   } catch (error: any) {
     console.error('Create message API error:', error)
     return NextResponse.json(

@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, Paperclip, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ChatInputProps {
-  onSendMessage: (content: string) => Promise<void>
+  onSendMessage: (content: string, attachment?: any) => Promise<void>
   placeholder?: string
   disabled?: boolean
   className?: string
@@ -21,7 +21,14 @@ export function ChatInput({
 }: ChatInputProps) {
   const [content, setContent] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [attachment, setAttachment] = useState<{
+    file: File,
+    preview: string,
+    type: 'image' | 'file'
+  } | null>(null)
+
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Auto-resize textarea
   useEffect(() => {
@@ -42,6 +49,44 @@ export function ChatInput({
     await sendMessage()
   }
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 2MB limit
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File too large (max 2MB)')
+      return
+    }
+
+    const type = file.type.startsWith('image/') ? 'image' : 'file'
+    const reader = new FileReader()
+
+    reader.onloadend = () => {
+      setAttachment({
+        file,
+        preview: reader.result as string,
+        type
+      })
+    }
+
+    if (type === 'image') {
+      reader.readAsDataURL(file)
+    } else {
+      // For non-images, we just need the file info, but we'll read as data URL 
+      // anyway to send to backend easily in this hackathon setup
+      reader.readAsDataURL(file)
+    }
+
+    // Reset input so same file can be selected again
+    e.target.value = ''
+    textareaRef.current?.focus()
+  }
+
+  const removeAttachment = () => {
+    setAttachment(null)
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -52,16 +97,26 @@ export function ChatInput({
   const sendMessage = async () => {
     const trimmedContent = content.trim()
 
-    if (!trimmedContent || isSending || disabled) {
+    if ((!trimmedContent && !attachment) || isSending || disabled) {
       return
     }
 
     setIsSending(true)
 
     try {
-      await onSendMessage(trimmedContent)
+      const attachmentData = attachment ? {
+        type: attachment.type,
+        url: attachment.preview, // The base64 string
+        name: attachment.file.name,
+        mimeType: attachment.file.type,
+        size: attachment.file.size
+      } : undefined
+
+      await onSendMessage(trimmedContent, attachmentData)
+
       // Clear input and refocus after successful send
       setContent('')
+      setAttachment(null)
       textareaRef.current?.focus()
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -71,12 +126,61 @@ export function ChatInput({
     }
   }
 
-  const isContentValid = content.trim().length > 0 && content.length <= maxLength
+  const isContentValid = (content.trim().length > 0 || attachment !== null) && content.length <= maxLength
   const canSend = isContentValid && !isSending && !disabled
 
   return (
     <div className={cn("border-t bg-white p-4", className)}>
+      {/* File Preview */}
+      {attachment && (
+        <div className="mb-3 flex items-start">
+          <div className="relative group">
+            {attachment.type === 'image' ? (
+              <img
+                src={attachment.preview}
+                alt="Preview"
+                className="h-20 w-auto rounded-lg border border-gray-200 object-cover"
+              />
+            ) : (
+              <div className="h-16 w-48 bg-gray-100 rounded-lg border border-gray-200 flex items-center p-3 gap-2">
+                <div className="bg-white p-2 rounded border border-gray-200">
+                  <Paperclip className="w-4 h-4 text-gray-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-gray-700 truncate">{attachment.file.name}</p>
+                  <p className="text-[10px] text-gray-500">{(attachment.file.size / 1024).toFixed(1)} KB</p>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={removeAttachment}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="flex gap-3 items-end">
+        {/* File Input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors mb-1"
+          title="Attach file"
+          disabled={disabled || isSending}
+        >
+          <Paperclip className="w-5 h-5" />
+        </button>
+
         {/* Message Input */}
         <div className="flex-1 relative">
           <textarea

@@ -9,6 +9,15 @@ export interface Message {
   status: 'sent' | 'translating' | 'translated' | 'failed'
   timestamp: Date
   translations?: Translation[]
+  attachment?: {
+    type: 'image' | 'file'
+    url: string
+    name: string
+    mimeType: string
+    size: number
+  }
+  senderName?: string
+  senderAvatar?: string
 }
 
 export interface Translation {

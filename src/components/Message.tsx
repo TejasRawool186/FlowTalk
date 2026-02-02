@@ -11,6 +11,7 @@ interface MessageProps {
   currentUserId?: string
   showTranslation?: boolean
   className?: string
+  onViewProfile?: (userId: string) => void
 }
 
 interface MessageToggleState {
@@ -24,7 +25,8 @@ export function Message({
   message,
   currentUserId,
   showTranslation = true,
-  className
+  className,
+  onViewProfile
 }: MessageProps) {
   const { user } = useMongoAuth()
   const [showOriginal, setShowOriginal] = useState(() => {
@@ -75,18 +77,27 @@ export function Message({
       className
     )}>
       <div className="flex-shrink-0">
-        <div className={cn(
-          "w-8 h-8 rounded-full flex items-center justify-center",
-          isOwnMessage ? "bg-blue-500" : "bg-green-500"
-        )}>
-          <User className="w-4 h-4 text-white" />
+        <div
+          onClick={() => onViewProfile?.(message.senderId)}
+          className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity",
+            isOwnMessage ? "bg-blue-500" : "bg-green-500"
+          )}>
+          {message.senderAvatar ? (
+            <img src={message.senderAvatar} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <User className="w-4 h-4 text-white" />
+          )}
         </div>
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-medium text-gray-900 text-sm">
-            {getUserDisplayName(message.senderId)}
+          <span
+            onClick={() => onViewProfile?.(message.senderId)}
+            className="font-medium text-gray-900 text-sm cursor-pointer hover:underline"
+          >
+            {message.senderName || getUserDisplayName(message.senderId)}
           </span>
           <span className="text-xs text-gray-500 flex items-center gap-1">
             <Clock className="w-3 h-3" />
@@ -100,6 +111,43 @@ export function Message({
         </div>
 
         <div className="relative">
+          {/* Attachment */}
+          {message.attachment && (
+            <div className="mb-2">
+              {message.attachment.type === 'image' ? (
+                <img
+                  src={message.attachment.url}
+                  alt="Attachment"
+                  className="max-w-full sm:max-w-sm rounded-lg border border-gray-200 cursor-pointer hover:opacity-95 transition-opacity"
+                  onClick={() => window.open(message.attachment?.url, '_blank')}
+                />
+              ) : (
+                <a
+                  href={message.attachment.url}
+                  download={message.attachment.name}
+                  className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors group max-w-sm"
+                >
+                  <div className="bg-white p-2 rounded border border-gray-200">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                      {message.attachment.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(message.attachment.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          )}
+
           <div className="text-sm text-gray-800 leading-relaxed">
             <MessageContent content={displayContent} />
           </div>

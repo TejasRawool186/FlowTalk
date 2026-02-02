@@ -3,7 +3,13 @@
 import { Message, Translation, GlossaryTerm, UserProfile, LanguageCode, Subscription } from '@/types'
 
 export interface MessageService {
-  createMessage(channelId: string, content: string, senderId: string, detectedLanguage?: string): Promise<Message>
+  createMessage(
+    channelId: string,
+    content: string,
+    senderId: string,
+    detectedLanguage?: string,
+    attachment?: any
+  ): Promise<Message>
   getChannelMessages(channelId: string, limit?: number): Promise<Message[]>
   updateMessageStatus(messageId: string, status: Message['status']): Promise<void>
   getMessageById(messageId: string): Promise<Message | null>
@@ -11,6 +17,12 @@ export interface MessageService {
   getChannelMessagesForUser(channelId: string, userId: string, limit?: number): Promise<Message[]>
   searchMessages(channelId: string, query: string, limit?: number): Promise<Message[]>
   getChannelMessageCount(channelId: string): Promise<number>
+}
+
+// ... existing interfaces ...
+
+export interface UserService {
+  getUserProfile(userId: string): Promise<UserProfile | null>
 }
 
 export interface TranslationEngine {

@@ -102,4 +102,5 @@ export { LanguageDetectorImpl } from './LanguageDetector'
 export { GlossaryManagerImpl } from './GlossaryManager'
 export { TranslationCacheImpl } from './TranslationCache'
 export { TranslationEngineImpl } from './TranslationEngine'
+export { MongoUserService } from './MongoUserService'
 

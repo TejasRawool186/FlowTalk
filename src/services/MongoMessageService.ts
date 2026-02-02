@@ -12,17 +12,28 @@ export class MongoMessageService implements MessageService {
   /**
    * Create a new message in MongoDB with proper language detection
    */
-  async createMessage(channelId: string, content: string, senderId: string, detectedLanguage?: string): Promise<Message> {
+  async createMessage(
+    channelId: string,
+    content: string,
+    senderId: string,
+    detectedLanguage?: string,
+    attachment?: any
+  ): Promise<Message> {
     try {
-      if (!channelId || !content.trim() || !senderId) {
-        throw new ValidationError('Channel ID, content, and sender ID are required')
+      if (!channelId || !senderId) {
+        throw new ValidationError('Channel ID and sender ID are required')
+      }
+      // Content is optional if there's an attachment
+      if (!content.trim() && !attachment) {
+        throw new ValidationError('Content or attachment is required')
       }
 
       const db = await getDatabase()
 
       // Step 1: Detect the actual language of the content (don't trust user preference)
       let sourceLanguage = detectedLanguage
-      if (!sourceLanguage) {
+      // Only detect if there is text content
+      if (!sourceLanguage && content.trim()) {
         try {
           const detectionResult = await this.languageDetector.detectLanguage(content)
           // Handle both string and object return types
@@ -37,6 +48,10 @@ export class MongoMessageService implements MessageService {
           }
           sourceLanguage = sender.primaryLanguage || 'en'
         }
+      } else if (!sourceLanguage) {
+        // If no content, default to user's language or 'en'
+        const sender = await db.collection('users').findOne({ _id: new ObjectId(senderId) })
+        sourceLanguage = sender?.primaryLanguage || 'en'
       }
 
       const messageDoc = {
@@ -46,7 +61,8 @@ export class MongoMessageService implements MessageService {
         sourceLanguage: sourceLanguage,
         status: MESSAGE_STATUS.SENT,
         timestamp: new Date(),
-        translations: []
+        translations: [],
+        attachment: attachment
       }
 
       const result = await db.collection('messages').insertOne(messageDoc)
@@ -59,7 +75,8 @@ export class MongoMessageService implements MessageService {
         sourceLanguage: messageDoc.sourceLanguage || 'en',
         status: messageDoc.status as MessageStatus,
         timestamp: messageDoc.timestamp,
-        translations: []
+        translations: [],
+        attachment: messageDoc.attachment
       }
     } catch (error) {
       throw handleError(error, 'MongoMessageService.createMessage')
@@ -77,11 +94,28 @@ export class MongoMessageService implements MessageService {
 
       const db = await getDatabase()
 
-      const messages = await db.collection('messages')
-        .find({ channelId: new ObjectId(channelId) })
-        .sort({ timestamp: 1 })
-        .limit(Math.min(limit, 100))
-        .toArray()
+      // Use aggregation to join with users collection
+      const pipeline = [
+        { $match: { channelId: new ObjectId(channelId) } },
+        { $sort: { timestamp: 1 } },
+        { $limit: Math.min(limit, 100) },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'senderId',
+            foreignField: '_id',
+            as: 'sender'
+          }
+        },
+        {
+          $unwind: {
+            path: '$sender',
+            preserveNullAndEmptyArrays: true
+          }
+        }
+      ]
+
+      const messages = await db.collection('messages').aggregate(pipeline).toArray()
 
       return messages.map(this.mapMongoMessageToMessage)
     } catch (error) {
@@ -104,11 +138,28 @@ export class MongoMessageService implements MessageService {
       const user = await db.collection('users').findOne({ _id: new ObjectId(userId) })
       const userLanguage = user?.primaryLanguage || 'en'
 
-      const messages = await db.collection('messages')
-        .find({ channelId: new ObjectId(channelId) })
-        .sort({ timestamp: 1 })
-        .limit(Math.min(limit, 100))
-        .toArray()
+      // Use aggregation to join with users collection
+      const pipeline = [
+        { $match: { channelId: new ObjectId(channelId) } },
+        { $sort: { timestamp: 1 } },
+        { $limit: Math.min(limit, 100) },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'senderId',
+            foreignField: '_id',
+            as: 'sender'
+          }
+        },
+        {
+          $unwind: {
+            path: '$sender',
+            preserveNullAndEmptyArrays: true
+          }
+        }
+      ]
+
+      const messages = await db.collection('messages').aggregate(pipeline).toArray()
 
       return messages.map(msg => {
         const message = this.mapMongoMessageToMessage(msg)
@@ -259,7 +310,10 @@ export class MongoMessageService implements MessageService {
         targetLanguage: t.targetLanguage,
         translatedContent: t.translatedContent,
         createdAt: t.createdAt
-      }))
+      })),
+      attachment: doc.attachment, // Map attachment
+      senderName: doc.sender?.username || 'Unknown User',
+      senderAvatar: doc.sender?.avatar
     }
   }
 }

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useMongoAuth } from '@/contexts/MongoAuthContext'
 import { MongoChannel } from './MongoChannel'
 import { CommunityDashboard } from './CommunityDashboard'
+import { UserProfileModal } from './UserProfileModal'
 import { LogOut, Settings, Globe, Users, Plus, Search, ChevronLeft, Hash, X, Loader2, Upload, MessageSquare } from 'lucide-react'
 import { Channel as ChannelType, Community, Conversation } from '@/types'
 
@@ -30,6 +31,7 @@ export function MongoChatApp() {
   const [creatingDM, setCreatingDM] = useState(false)
   const [dmError, setDmError] = useState('')
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     if (showSettings && user) {
@@ -185,43 +187,28 @@ export function MongoChatApp() {
     }
   }
 
-  const handleCreateDM = async () => {
-    if (!newDMUsername.trim()) return
+  const handleCreateDM = async (targetIdentifier?: string) => {
+    const identifier = targetIdentifier || newDMUsername
+    if (!identifier.trim()) return
 
     setCreatingDM(true)
     setDmError('')
 
     try {
-      // First find user by username to get ID (we'll need an endpoint for this or search)
-      // For now assuming we can search users or improved API
-      // Since we don't have a user search endpoint yet, we'll try to create it and let backend handle lookup if flexible, 
-      // but standard is usually ID. Let's assume we need to implement user search or use existing one.
-      // Wait, let's implement a simple user lookup in the Create DM flow or just try to add by username if API supports it.
-      // The current API expects targetUserId. Let's assume we need to find the user first.
-
-      // Actually, let's create a quick specialized call or just fail if not found.
-      // But wait, we don't have a "get user by username" route.
-      // Hack: We'll list all users for now? No, bad for scale.
-      // Let's rely on a new service method logic or add a quick route.
-      // For this step, I'll assume we can pass username and backend handles it, OR I update backend.
-      // Let's update the UI to just ask for username, and I'll modify the backend route to accept username too?
-      // No, let's stick to clean, I'll add a lookup helper in the UI if needed, but for now let's assume valid ID?
-      // The prompt said "search users by username".
-      // Let's implement a search in the UI? 
-      // Let's skip complex search for this iteration and assuming precise username entry.
-      // I will allow entering a username, and the POST /api/conversations will need to find that user.
-
-      // Correction: I should update the POST /api/conversations to accept username OR userId.
-      // Since I can't update route.ts in this same turn easily without risk,
-      // I'll update the frontend to EXPECT the route to handle username lookup
-      // OR I can use the existing /api/users/search if it exists? 
-      // It does not. I will add logic to the route in next step if needed.
-      // actually, let's add the UI logic to call the endpoint.
+      // payload: send as targetUserId if it looks like an ID (from modal), otherwise as targetUsername
+      // Actually, backend now handles 'targetUsername' smartly, so we can just send it as targetUsername 
+      // OR we can be explicit. explicit is better.
+      // Let's rely on backend smarts for simplicity or check regex here.
+      // Since we changed backend to check both, sending as targetUsername is fine, BUT
+      // if we clicked from modal, we are passing an ID.
+      // Let's send as 'targetUsername' for now since backend handles ID-in-username-field.
+      // Wait, if I pass an ID as targetUsername, backend checks ObjectId.isValid(targetUsername) -> finds user.
+      // So keeping it sending as 'targetUsername' works for BOTH cases.
 
       const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUsername: newDMUsername.trim() })
+        body: JSON.stringify({ targetUsername: identifier.trim() })
       })
 
       if (!response.ok) {
@@ -625,7 +612,7 @@ export function MongoChatApp() {
                     }}
                   />
                   <button
-                    onClick={handleCreateDM}
+                    onClick={() => handleCreateDM()}
                     disabled={creatingDM || !newDMUsername.trim()}
                     className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm rounded transition-colors whitespace-nowrap"
                   >
@@ -679,6 +666,7 @@ export function MongoChatApp() {
           <MongoChannel
             channel={selectedChannel}
             currentUserId={user!.id}
+            onViewProfile={setViewingUserId}
           />
         ) : selectedConversation ? (
           // Reusing MongoChannel logic but adapted for DMs would be ideal, 
@@ -698,6 +686,7 @@ export function MongoChatApp() {
             }}
             currentUserId={user!.id}
             isDirectMessage={true} // We might need to add this prop to MongoChannel to handle different API endpoints
+            onViewProfile={setViewingUserId}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-gray-50">
@@ -716,6 +705,14 @@ export function MongoChatApp() {
           </div>
         )}
       </div>
+
+      <UserProfileModal
+        userId={viewingUserId}
+        isOpen={!!viewingUserId}
+        onClose={() => setViewingUserId(null)}
+        currentUserId={user?.id || ''}
+        onMessageUser={handleCreateDM}
+      />
     </div>
   )
 }
