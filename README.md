@@ -1,6 +1,6 @@
 # FlowTalk - Multilingual Chat Application
 
-A real-time multilingual chat application that breaks language barriers by automatically translating messages. Built with **Next.js**, **MongoDB**, and **AI-powered translation**.
+A real-time multilingual chat application that breaks language barriers by automatically translating messages. Built with **Next.js**, **MongoDB**, and **Lingo.dev AI Translation**.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green)
@@ -22,7 +22,7 @@ A real-time multilingual chat application that breaks language barriers by autom
 
 - Node.js 18+ 
 - MongoDB (local or Atlas)
-- OpenAI API key (for translations)
+- Lingo.dev API Key (for translations)
 
 ### Installation
 
@@ -46,8 +46,8 @@ A real-time multilingual chat application that breaks language barriers by autom
    MONGODB_DB_NAME=flowtalk
    JWT_SECRET=your-secret-key
    
-   # OpenAI API (for translation)
-   OPENAI_API_KEY=your-openai-api-key
+   # Lingo.dev API (for translation)
+   LINGO_API_KEY=your-lingo-api-key
    ```
 
 4. **Start MongoDB** (if running locally)
@@ -74,7 +74,7 @@ A real-time multilingual chat application that breaks language barriers by autom
                                  │
                                  ▼
                         ┌─────────────────┐
-                        │   OpenAI API    │
+                        │  Lingo.dev API  │
                         │  (Translation)  │
                         └─────────────────┘
 ```
@@ -89,7 +89,7 @@ src/
 ├── lib/                # Utilities (MongoDB, Parser, Auth)
 ├── services/           # Business logic
 │   ├── LanguageDetector.ts     # Language detection
-│   ├── OpenAITranslationService.ts  # AI translation
+│   ├── TranslationEngine.ts    # Lingo.dev Translation Engine
 │   ├── TranslationCache.ts     # Caching layer
 │   ├── GlossaryManager.ts      # Term protection
 │   └── MongoMessageService.ts  # Message storage
@@ -104,7 +104,7 @@ src/
 | Styling | Tailwind CSS 4 |
 | Database | MongoDB 7.0 |
 | Authentication | JWT + bcrypt |
-| Translation | OpenAI GPT API |
+| Translation | Lingo.dev API |
 | Icons | Lucide React |
 
 ## 🧪 Testing
@@ -125,7 +125,7 @@ npm run test:coverage
 | Service | Description |
 |---------|-------------|
 | **LanguageDetector** | Detects message language automatically |
-| **OpenAITranslationService** | Handles AI-powered translations |
+| **TranslationEngine** | Handles Lingo.dev powered translations |
 | **TranslationCache** | Caches translations for performance |
 | **GlossaryManager** | Protects technical terms from translation |
 | **MongoMessageService** | Manages message storage and retrieval |

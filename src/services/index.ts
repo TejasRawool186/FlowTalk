@@ -103,5 +103,3 @@ export { GlossaryManagerImpl } from './GlossaryManager'
 export { TranslationCacheImpl } from './TranslationCache'
 export { TranslationEngineImpl } from './TranslationEngine'
 
-// Export OpenAI AI translation service
-export { OpenAITranslationService, getOpenAITranslationService } from './OpenAITranslationService'
