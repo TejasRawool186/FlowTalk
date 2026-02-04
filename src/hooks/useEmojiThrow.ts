@@ -133,7 +133,7 @@ const calculateBezierPoint = (
  * Uses requestAnimationFrame and quadratic Bezier curves for smooth, arc-like motion.
  */
 export const useEmojiThrow = () => {
-    const animationRef = useRef<number>()
+    const animationRef = useRef<number | undefined>(undefined)
     const emojiRef = useRef<HTMLDivElement | null>(null)
 
     const throwEmoji = useCallback(

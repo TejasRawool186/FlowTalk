@@ -249,12 +249,40 @@ function MessageContent({ content }: { content: string }) {
       }
 
       const language = match[1] || 'text'
-      const code = match[2]
+      const code = match[2].trimEnd() // Remove trailing whitespace but preserve indentation
+      const lines = code.split('\n')
+
       parts.push(
-        <div key={parts.length} className="my-2">
-          <div className="bg-gray-100 rounded-md p-3 text-sm font-mono overflow-x-auto">
-            <div className="text-xs text-gray-500 mb-1">{language}</div>
-            <pre className="whitespace-pre-wrap">{code}</pre>
+        <div key={parts.length} className="my-3 group/codeblock">
+          <div className="bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-700">
+            {/* Header with language and copy button */}
+            <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{language}</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(code)
+                }}
+                className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-700 transition-colors opacity-0 group-hover/codeblock:opacity-100"
+                title="Copy code"
+              >
+                Copy
+              </button>
+            </div>
+            {/* Code content with line numbers */}
+            <div className="overflow-x-auto">
+              <pre className="p-4 text-sm leading-relaxed">
+                <code className="text-gray-100 font-mono">
+                  {lines.map((line, lineIndex) => (
+                    <div key={lineIndex} className="flex">
+                      <span className="select-none text-gray-600 text-right pr-4 min-w-[2.5rem] border-r border-gray-700 mr-4">
+                        {lineIndex + 1}
+                      </span>
+                      <span className="whitespace-pre">{line}</span>
+                    </div>
+                  ))}
+                </code>
+              </pre>
+            </div>
           </div>
         </div>
       )
@@ -271,11 +299,17 @@ function MessageContent({ content }: { content: string }) {
   }
 
   const renderInlineFormatting = (text: string, key: number) => {
-    const parts = text.split(/(`[^`]+`)/g)
+    // Combined regex to match bold (**text**), italic (*text*), and inline code (`code`)
+    // Order matters: check bold before italic since ** contains *
+    const formatRegex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g
+    const parts = text.split(formatRegex)
 
     return (
       <span key={key}>
         {parts.map((part, index) => {
+          if (!part) return null
+
+          // Check for inline code first (backticks)
           if (part.startsWith('`') && part.endsWith('`')) {
             const code = part.slice(1, -1)
             return (
@@ -287,6 +321,28 @@ function MessageContent({ content }: { content: string }) {
               </code>
             )
           }
+
+          // Check for bold (**text**)
+          if (part.startsWith('**') && part.endsWith('**')) {
+            const boldText = part.slice(2, -2)
+            return (
+              <strong key={index} className="font-bold">
+                {boldText}
+              </strong>
+            )
+          }
+
+          // Check for italic (*text*)
+          if (part.startsWith('*') && part.endsWith('*')) {
+            const italicText = part.slice(1, -1)
+            return (
+              <em key={index} className="italic">
+                {italicText}
+              </em>
+            )
+          }
+
+          // Regular text
           return <span key={index}>{part}</span>
         })}
       </span>
