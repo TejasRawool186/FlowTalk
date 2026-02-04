@@ -37,7 +37,9 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         const recognition = new SpeechRecognition()
         recognition.continuous = true
         recognition.interimResults = true
-        recognition.lang = 'en-US' // Can be made dynamic
+        // Use auto-detect by not setting a specific language, fallback to user's browser language
+        // This helps with multilingual detection
+        recognition.lang = navigator.language || 'en-US'
 
         recognition.onstart = () => {
             setIsRecording(true)
@@ -64,10 +66,13 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         }
 
         recognition.onerror = (event: any) => {
-            console.error('Speech recognition error:', event.error)
-            if (event.error !== 'no-speech') {
-                setError(`Error: ${event.error}`)
+            // Ignore expected errors (no-speech, aborted when user cancels)
+            if (event.error === 'no-speech' || event.error === 'aborted') {
+                setIsRecording(false)
+                return
             }
+            console.error('Speech recognition error:', event.error)
+            setError(`Error: ${event.error}`)
             setIsRecording(false)
         }
 
