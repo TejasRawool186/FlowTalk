@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, Paperclip, X } from 'lucide-react'
+import { Send, Loader2, Paperclip, X, Mic } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { VoiceMessageButton } from './VoiceMessage'
 
 interface ChatInputProps {
   onSendMessage: (content: string, attachment?: any) => Promise<void>
@@ -180,6 +181,16 @@ export function ChatInput({
         >
           <Paperclip className="w-5 h-5" />
         </button>
+
+        {/* Voice Message Button */}
+        <VoiceMessageButton
+          onVoiceMessage={(text) => {
+            setContent(text)
+            textareaRef.current?.focus()
+          }}
+          disabled={disabled || isSending}
+          className="mb-1"
+        />
 
         {/* Message Input */}
         <div className="flex-1 relative">

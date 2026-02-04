@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Globe, User, Clock, Loader2 } from 'lucide-react'
+import { Globe, User, Clock, Loader2, Volume2 } from 'lucide-react'
 import { Message as MessageType } from '@/types'
 import { formatTimestamp, cn } from '@/lib/utils'
 import { useMongoAuth } from '@/contexts/MongoAuthContext'
 import { EmojiReactions, ReactionBadges } from './EmojiReactions'
+import { VoicePlayButton } from './VoiceMessage'
 
 interface MessageProps {
   message: MessageType
@@ -186,9 +187,16 @@ export function Message({
               </button>
 
               {shouldShowTranslation && userTranslation && (
-                <span className="text-xs text-gray-400 bg-green-50 text-green-600 px-1.5 py-0.5 rounded">
-                  Translated to {getLanguageDisplayName(userTranslation.targetLanguage)}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-400 bg-green-50 text-green-600 px-1.5 py-0.5 rounded">
+                    Translated to {getLanguageDisplayName(userTranslation.targetLanguage)}
+                  </span>
+                  {/* Listen to translation */}
+                  <VoicePlayButton
+                    text={userTranslation.translatedContent}
+                    language={userTranslation.targetLanguage}
+                  />
+                </div>
               )}
 
               {hasTranslations && (
