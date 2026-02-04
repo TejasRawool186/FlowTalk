@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Message } from './Message'
 import { ChatInput } from './ChatInput'
 import { Message as MessageType, Channel as ChannelType } from '@/types'
 import { cn } from '@/lib/utils'
 import { Hash, Users, Settings, Trash2 } from 'lucide-react'
+import { useEmojiThrow } from '@/hooks/useEmojiThrow'
 
 interface ChannelProps {
   channel: ChannelType
@@ -23,6 +24,77 @@ export function MongoChannel({ channel, currentUserId, className, onViewProfile 
   const [clearing, setClearing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Emoji throw animation hook
+  const { throwEmojiFromPoint } = useEmojiThrow()
+
+  // API call to add/toggle reaction with optimistic UI update
+  const addReaction = useCallback(async (emoji: string, messageId: string, currentUserId?: string, userName?: string) => {
+    // Optimistic update - immediately update UI
+    setMessages(prevMessages =>
+      prevMessages.map(msg => {
+        if (msg.id !== messageId) return msg
+
+        const currentReactions = msg.reactions || []
+        const userReaction = currentReactions.find(r => r.userId === currentUserId)
+
+        if (userReaction?.emoji === emoji) {
+          // Remove reaction (toggle off)
+          return {
+            ...msg,
+            reactions: currentReactions.filter(r => r.userId !== currentUserId)
+          }
+        } else if (userReaction) {
+          // Replace with new emoji
+          return {
+            ...msg,
+            reactions: currentReactions.map(r =>
+              r.userId === currentUserId
+                ? { ...r, emoji, createdAt: new Date() }
+                : r
+            )
+          }
+        } else {
+          // Add new reaction
+          return {
+            ...msg,
+            reactions: [...currentReactions, { emoji, userId: currentUserId || '', userName, createdAt: new Date() }]
+          }
+        }
+      })
+    )
+
+    // Sync with server
+    try {
+      await fetch('/api/messages/reactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, emoji })
+      })
+    } catch (error) {
+      console.error('Failed to add reaction:', error)
+      // Revert on error - reload messages
+      loadMessages(false)
+    }
+  }, [])
+
+  // Handle emoji reaction - throw emoji animation + store in DB
+  const handleEmojiReaction = useCallback((emoji: string, messageId: string, event: React.MouseEvent) => {
+    const clickX = event.clientX
+    const clickY = event.clientY
+    const targetId = `message-${messageId}`
+
+    // Throw the emoji from the click position to the message
+    throwEmojiFromPoint(emoji, clickX, clickY, targetId)
+
+    // Store the reaction immediately (optimistic update)
+    addReaction(emoji, messageId, currentUserId, currentUserId)
+  }, [throwEmojiFromPoint, addReaction, currentUserId])
+
+  // Handle clicking on existing reaction badge (toggle)
+  const handleReactionBadgeClick = useCallback((emoji: string, messageId: string) => {
+    addReaction(emoji, messageId, currentUserId, currentUserId)
+  }, [addReaction, currentUserId])
 
   useEffect(() => {
     loadMessages()
@@ -282,6 +354,8 @@ export function MongoChannel({ channel, currentUserId, className, onViewProfile 
                 message={message}
                 currentUserId={currentUserId}
                 onViewProfile={onViewProfile}
+                onEmojiReaction={handleEmojiReaction}
+                onReactionBadgeClick={handleReactionBadgeClick}
               />
             ))}
             <div ref={messagesEndRef} />

@@ -5,6 +5,7 @@ import { Globe, User, Clock, Loader2 } from 'lucide-react'
 import { Message as MessageType } from '@/types'
 import { formatTimestamp, cn } from '@/lib/utils'
 import { useMongoAuth } from '@/contexts/MongoAuthContext'
+import { EmojiReactions, ReactionBadges } from './EmojiReactions'
 
 interface MessageProps {
   message: MessageType
@@ -12,6 +13,8 @@ interface MessageProps {
   showTranslation?: boolean
   className?: string
   onViewProfile?: (userId: string) => void
+  onEmojiReaction?: (emoji: string, messageId: string, event: React.MouseEvent) => void
+  onReactionBadgeClick?: (emoji: string, messageId: string) => void
 }
 
 interface MessageToggleState {
@@ -26,7 +29,9 @@ export function Message({
   currentUserId,
   showTranslation = true,
   className,
-  onViewProfile
+  onViewProfile,
+  onEmojiReaction,
+  onReactionBadgeClick
 }: MessageProps) {
   const { user } = useMongoAuth()
   const [showOriginal, setShowOriginal] = useState(() => {
@@ -68,14 +73,16 @@ export function Message({
   }, [message.id, showOriginal])
 
   return (
-    <div className={cn(
-      "group flex gap-3 px-4 py-2 hover:bg-gray-50 transition-colors",
-      // Enhanced light background colors for sent vs received messages
-      isOwnMessage
-        ? "bg-blue-50/40 hover:bg-blue-50/60 border-l-2 border-blue-200" // Light blue for sent messages with left border
-        : "bg-green-50/40 hover:bg-green-50/60 border-l-2 border-green-200", // Light green for received messages with left border
-      className
-    )}>
+    <div
+      id={`message-${message.id}`}
+      className={cn(
+        "group flex gap-3 px-4 py-2 hover:bg-gray-50 transition-colors relative",
+        // Enhanced light background colors for sent vs received messages
+        isOwnMessage
+          ? "bg-blue-50/40 hover:bg-blue-50/60 border-l-2 border-blue-200" // Light blue for sent messages with left border
+          : "bg-green-50/40 hover:bg-green-50/60 border-l-2 border-green-200", // Light green for received messages with left border
+        className
+      )}>
       <div className="flex-shrink-0">
         <div
           onClick={() => onViewProfile?.(message.senderId)}
@@ -197,8 +204,25 @@ export function Message({
               <span>⚠️ Translation failed</span>
             </div>
           )}
+
+          {/* Persistent Reaction Badges (Telegram-style) */}
+          <ReactionBadges
+            reactions={message.reactions || []}
+            currentUserId={currentUserId}
+            onReactionClick={(emoji) => onReactionBadgeClick?.(emoji, message.id)}
+          />
         </div>
       </div>
+
+      {/* Emoji Reactions - appears on hover at top-right */}
+      {onEmojiReaction && (
+        <div className="absolute top-1 right-2">
+          <EmojiReactions
+            messageId={message.id}
+            onEmojiSelect={onEmojiReaction}
+          />
+        </div>
+      )}
     </div>
   )
 }

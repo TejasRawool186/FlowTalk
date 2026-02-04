@@ -311,9 +311,15 @@ export class MongoMessageService implements MessageService {
         translatedContent: t.translatedContent,
         createdAt: t.createdAt
       })),
-      attachment: doc.attachment, // Map attachment
+      attachment: doc.attachment,
       senderName: doc.sender?.username || 'Unknown User',
-      senderAvatar: doc.sender?.avatar
+      senderAvatar: doc.sender?.avatar,
+      reactions: (doc.reactions || []).map((r: any) => ({
+        emoji: r.emoji,
+        userId: r.userId,
+        userName: r.userName,
+        createdAt: r.createdAt
+      }))
     }
   }
 }

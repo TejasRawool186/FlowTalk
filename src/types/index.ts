@@ -18,6 +18,12 @@ export interface Message {
   }
   senderName?: string
   senderAvatar?: string
+  reactions?: {
+    emoji: string
+    userId: string
+    userName?: string
+    createdAt?: Date
+  }[]
 }
 
 export interface Translation {
