@@ -6,28 +6,46 @@
 <br/>
 
 <!-- Badges Row 1 -->
-[![Next.js](https://img.shields.io/badge/Next.js-16.1.4-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+<a href="https://nextjs.org/">
+  <img src="https://img.shields.io/badge/Next.js-16.1.4-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+</a>
+<a href="https://react.dev/">
+  <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+</a>
+<a href="https://www.typescriptlang.org/">
+  <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+</a>
+<a href="https://www.mongodb.com/">
+  <img src="https://img.shields.io/badge/MongoDB-7.0-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+</a>
+<a href="https://tailwindcss.com/">
+  <img src="https://img.shields.io/badge/Tailwind-4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="TailwindCSS" />
+</a>
 
 <br/>
 
 <!-- Badges Row 2 -->
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
-[![Stars](https://img.shields.io/github/stars/your-username/flowtalk?style=for-the-badge&logo=github)](https://github.com/your-username/flowtalk)
-[![Forks](https://img.shields.io/github/forks/your-username/flowtalk?style=for-the-badge&logo=github)](https://github.com/your-username/flowtalk/fork)
+<a href="LICENSE">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
+</a>
+<a href="CONTRIBUTING.md">
+  <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome" />
+</a>
+<a href="https://github.com/your-username/flowtalk">
+  <img src="https://img.shields.io/github/stars/your-username/flowtalk?style=for-the-badge&logo=github" alt="Stars" />
+</a>
+<a href="https://github.com/your-username/flowtalk/fork">
+  <img src="https://img.shields.io/github/forks/your-username/flowtalk?style=for-the-badge&logo=github" alt="Forks" />
+</a>
 
 <br/>
 
 <!-- Status Badges -->
-![Build Status](https://img.shields.io/badge/Build-Passing-success?style=flat-square)
-![Tests](https://img.shields.io/badge/Tests-97%25%20Passing-success?style=flat-square)
-![Coverage](https://img.shields.io/badge/Coverage-85%25-yellow?style=flat-square)
-![Uptime](https://img.shields.io/badge/Uptime-99.9%25-success?style=flat-square)
-![Response Time](https://img.shields.io/badge/Response-<1.5s-blue?style=flat-square)
+<img src="https://img.shields.io/badge/Build-Passing-success?style=flat-square" alt="Build Status" />
+<img src="https://img.shields.io/badge/Tests-97%25%20Passing-success?style=flat-square" alt="Tests" />
+<img src="https://img.shields.io/badge/Coverage-85%25-yellow?style=flat-square" alt="Coverage" />
+<img src="https://img.shields.io/badge/Uptime-99.9%25-success?style=flat-square" alt="Uptime" />
+<img src="https://img.shields.io/badge/Response-<1.5s-blue?style=flat-square" alt="Response Time" />
 
 <br/><br/>
 
@@ -941,10 +959,18 @@ Special thanks to these amazing technologies and communities:
 
 <br/>
 
-[![Star this repo](https://img.shields.io/badge/⭐_Star_This_Repo-FFD700?style=for-the-badge&logo=github&logoColor=black)](https://github.com/your-username/flowtalk)
-[![Fork this repo](https://img.shields.io/badge/🍴_Fork_This_Repo-1976D2?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-username/flowtalk/fork)
-[![Report Bug](https://img.shields.io/badge/🐛_Report_Bug-FF5252?style=for-the-badge)](https://github.com/your-username/flowtalk/issues/new?template=bug_report.md)
-[![Request Feature](https://img.shields.io/badge/✨_Request_Feature-4CAF50?style=for-the-badge)](https://github.com/your-username/flowtalk/issues/new?template=feature_request.md)
+<a href="https://github.com/your-username/flowtalk">
+  <img src="https://img.shields.io/badge/⭐_Star_This_Repo-FFD700?style=for-the-badge&logo=github&logoColor=black" alt="Star this repo" />
+</a>
+<a href="https://github.com/your-username/flowtalk/fork">
+  <img src="https://img.shields.io/badge/🍴_Fork_This_Repo-1976D2?style=for-the-badge&logo=github&logoColor=white" alt="Fork this repo" />
+</a>
+<a href="https://github.com/your-username/flowtalk/issues/new?template=bug_report.md">
+  <img src="https://img.shields.io/badge/🐛_Report_Bug-FF5252?style=for-the-badge" alt="Report Bug" />
+</a>
+<a href="https://github.com/your-username/flowtalk/issues/new?template=feature_request.md">
+  <img src="https://img.shields.io/badge/✨_Request_Feature-4CAF50?style=for-the-badge" alt="Request Feature" />
+</a>
 
 <br/>
 
@@ -956,7 +982,7 @@ Special thanks to these amazing technologies and communities:
 
 <br/>
 
-**Made with ❤️ and ☕ for the global community**
+**Made for the global community**
 
 <br/>
 
