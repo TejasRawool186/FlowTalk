@@ -3,6 +3,7 @@ import { verifyToken } from '@/lib/auth'
 import { getMessageService, getTranslationEngine } from '@/services'
 import { getDatabase } from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
+import { Translation } from '@/types'
 
 // Import language detector for proper language detection
 import { LanguageDetectorImpl } from '@/services/LanguageDetector'
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
 
           // Get translation from database if it exists
           const messageDoc = await db.collection('messages').findOne({ _id: new ObjectId(message.id) })
-          const dbTranslation = messageDoc?.translations?.find((t: any) => t.targetLanguage === userLanguage)
+          const dbTranslation = messageDoc?.translations?.find((t: Translation) => t.targetLanguage === userLanguage)
 
           if (dbTranslation) {
             return {
@@ -83,10 +84,10 @@ export async function GET(request: NextRequest) {
 
             translatedContent = await translationEngine.translateText(
               message.content,
-              message.sourceLanguage as any,
-              userLanguage as any
+              message.sourceLanguage,
+              userLanguage
             )
-          } catch (translationError) {
+          } catch (translationError: unknown) {
             console.warn('Translation API failed:', translationError)
             return message // Return original message if translation fails
           }
@@ -122,7 +123,7 @@ export async function GET(request: NextRequest) {
     )
 
     return NextResponse.json({ messages: messagesWithTranslations })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Messages API error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch messages' },
@@ -211,10 +212,10 @@ export async function POST(request: NextRequest) {
               try {
                 translatedContent = await translationEngine.translateText(
                   message.content,
-                  message.sourceLanguage as any,
-                  targetLang as any
+                  message.sourceLanguage,
+                  targetLang
                 )
-              } catch (translationError) {
+              } catch (translationError: unknown) {
                 console.warn(`Translation API failed for ${targetLang}:`, translationError)
                 return null
               }
@@ -224,7 +225,7 @@ export async function POST(request: NextRequest) {
                 translatedContent,
                 createdAt: new Date()
               }
-            } catch (error) {
+            } catch (error: unknown) {
               console.error(`Translation failed for ${targetLang}:`, error)
               return null
             }
@@ -239,7 +240,7 @@ export async function POST(request: NextRequest) {
             { $set: { translations: successfulTranslations } }
           )
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Translation process failed:', error)
         // Don't fail the message creation if translation fails
       }
@@ -256,7 +257,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ message: messageWithSender })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create message API error:', error)
     return NextResponse.json(
       { error: 'Failed to create message' },
@@ -305,7 +306,7 @@ export async function DELETE(request: NextRequest) {
       deletedCount: result.deletedCount,
       message: `Deleted ${result.deletedCount} messages from channel`
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Delete messages API error:', error)
     return NextResponse.json(
       { error: 'Failed to delete messages' },
@@ -340,7 +341,7 @@ async function getEnhancedTranslation(content: string, sourceLanguage: string, t
       console.log(`✅ No translation needed: content is already in target language ${targetLanguage}`)
       return content
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.warn('Language detection failed, proceeding with translation:', error)
   }
 

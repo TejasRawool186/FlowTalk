@@ -96,8 +96,8 @@ export function MongoChatApp() {
         setShowDashboard(false)
       }
 
-    } catch (error: any) {
-      console.error('Error loading communities and channels:', error?.message || error)
+    } catch (error: unknown) {
+      console.error('Error loading communities and channels:', error instanceof Error ? error.message : String(error))
     } finally {
       setLoading(false)
     }
@@ -156,8 +156,8 @@ export function MongoChatApp() {
       // Reset form
       setNewChannelName('')
       setShowCreateChannel(false)
-    } catch (err: any) {
-      setChannelError(err.message)
+    } catch (err: unknown) {
+      setChannelError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setCreatingChannel(false)
     }
@@ -224,8 +224,8 @@ export function MongoChatApp() {
       setShowNewDM(false)
       setNewDMUsername('')
 
-    } catch (err: any) {
-      setDmError(err.message)
+    } catch (err: unknown) {
+      setDmError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setCreatingDM(false)
     }

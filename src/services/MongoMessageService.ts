@@ -1,6 +1,6 @@
-import { ObjectId } from 'mongodb'
+import { ObjectId, Document, WithId } from 'mongodb'
 import { getDatabase } from '@/lib/mongodb'
-import { Message, MessageStatus } from '@/types'
+import { Message, MessageStatus, Translation } from '@/types'
 import { MessageService } from './interfaces'
 import { ValidationError, DatabaseError, handleError } from '@/lib/errors'
 import { MESSAGE_STATUS } from '@/lib/constants'
@@ -17,7 +17,7 @@ export class MongoMessageService implements MessageService {
     content: string,
     senderId: string,
     detectedLanguage?: string,
-    attachment?: any
+    attachment?: Message['attachment']
   ): Promise<Message> {
     try {
       if (!channelId || !senderId) {
@@ -39,9 +39,11 @@ export class MongoMessageService implements MessageService {
           // Handle both string and object return types
           sourceLanguage = typeof detectionResult === 'string' ? detectionResult : detectionResult.language
           console.log(`🔍 Language detected for message: "${content}" -> ${sourceLanguage}`)
-        } catch (error) {
-          console.warn('Language detection failed, falling back to user preference:', error)
-          // Fallback to sender's profile language
+        } catch (error: unknown) {
+          console.warn('Language detection failed, proceeding with translation:', error)
+        }
+        // Fallback to sender's profile language
+        if (!sourceLanguage) { // If detection failed or returned null/undefined
           const sender = await db.collection('users').findOne({ _id: new ObjectId(senderId) })
           if (!sender) {
             throw new DatabaseError('Sender not found', new Error('User not found'))
@@ -78,7 +80,7 @@ export class MongoMessageService implements MessageService {
         translations: [],
         attachment: messageDoc.attachment
       }
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.createMessage')
     }
   }
@@ -118,7 +120,7 @@ export class MongoMessageService implements MessageService {
       const messages = await db.collection('messages').aggregate(pipeline).toArray()
 
       return messages.map(this.mapMongoMessageToMessage)
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.getChannelMessages')
     }
   }
@@ -165,7 +167,7 @@ export class MongoMessageService implements MessageService {
         const message = this.mapMongoMessageToMessage(msg)
 
         // Find translation for user's language
-        const translation = msg.translations?.find((t: any) => t.targetLanguage === userLanguage)
+        const translation = msg.translations?.find((t: Translation) => t.targetLanguage === userLanguage)
         if (translation) {
           message.translations = [{
             messageId: message.id,
@@ -177,7 +179,7 @@ export class MongoMessageService implements MessageService {
 
         return message
       })
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.getChannelMessagesForUser')
     }
   }
@@ -207,7 +209,7 @@ export class MongoMessageService implements MessageService {
           }
         }
       )
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.updateMessageStatus')
     }
   }
@@ -226,7 +228,7 @@ export class MongoMessageService implements MessageService {
       const message = await db.collection('messages').findOne({ _id: new ObjectId(messageId) })
 
       return message ? this.mapMongoMessageToMessage(message) : null
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.getMessageById')
     }
   }
@@ -243,7 +245,7 @@ export class MongoMessageService implements MessageService {
       const db = await getDatabase()
 
       await db.collection('messages').deleteOne({ _id: new ObjectId(messageId) })
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.deleteMessage')
     }
   }
@@ -269,7 +271,7 @@ export class MongoMessageService implements MessageService {
         .toArray()
 
       return messages.map(this.mapMongoMessageToMessage)
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.searchMessages')
     }
   }
@@ -288,7 +290,7 @@ export class MongoMessageService implements MessageService {
       return await db.collection('messages').countDocuments({
         channelId: new ObjectId(channelId)
       })
-    } catch (error) {
+    } catch (error: unknown) {
       throw handleError(error, 'MongoMessageService.getChannelMessageCount')
     }
   }
@@ -296,7 +298,7 @@ export class MongoMessageService implements MessageService {
   /**
    * Map MongoDB document to Message type
    */
-  private mapMongoMessageToMessage(doc: any): Message {
+  private mapMongoMessageToMessage(doc: WithId<Document> | any): Message {
     return {
       id: doc._id.toString(),
       channelId: doc.channelId.toString(),
@@ -305,7 +307,7 @@ export class MongoMessageService implements MessageService {
       sourceLanguage: doc.sourceLanguage,
       status: doc.status as MessageStatus,
       timestamp: doc.timestamp,
-      translations: (doc.translations || []).map((t: any) => ({
+      translations: (doc.translations || []).map((t: Translation) => ({
         messageId: doc._id.toString(),
         targetLanguage: t.targetLanguage,
         translatedContent: t.translatedContent,
