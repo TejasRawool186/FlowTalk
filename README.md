@@ -11,28 +11,28 @@
 
 ---
 
-## 📋 Overview
+## Overview
 
 FlowTalk is a real-time multilingual chat platform that breaks language barriers using AI translation. Users communicate naturally in their preferred language while others see messages translated instantly.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-- 🌐 Real-time translation for 100+ languages  
-- 🔤 Smart glossary preservation for technical terms  
-- 🎙️ Multilingual voice messaging with transcription  
-- 😊 Animated emoji reactions  
-- 👁️ Toggle between original/translated messages  
-- 💬 Community & channel-based organization  
+- Real-time translation for 100+ languages  
+- Smart glossary preservation for technical terms  
+- Multilingual voice messaging with transcription  
+- Animated emoji reactions  
+- Toggle between original/translated messages  
+- Community & channel-based organization  
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Client["🖥️ Client Layer"]
+    subgraph Client[" Client Layer"]
         UI[Next.js Frontend]
         Auth[Auth Context]
         Chat[Chat Components]
@@ -44,18 +44,18 @@ flowchart TB
         CommAPI[Community Routes]
     end
     
-    subgraph Services["⚙️ Service Layer"]
+    subgraph Services[" Service Layer"]
         MsgSvc[Message Service]
         TransSvc[Translation Engine]
         Cache[Translation Cache]
         Glossary[Glossary Manager]
     end
     
-    subgraph External["🌐 External"]
+    subgraph External[" External"]
         LingoAPI[Lingo.dev API]
     end
     
-    subgraph Data["💾 Database"]
+    subgraph Data["Database"]
         MongoDB[(MongoDB)]
     end
     
@@ -70,7 +70,7 @@ flowchart TB
 
 ---
 
-## 🔄 System Workflow
+## System Workflow
 
 ```mermaid
 flowchart LR
@@ -88,7 +88,7 @@ flowchart LR
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 <table align="center">
 <tr>
@@ -152,7 +152,7 @@ flowchart LR
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 git clone https://github.com/your-username/flowtalk.git
@@ -166,7 +166,7 @@ Open → http://localhost:3000
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 ```env
 MONGODB_URI=your_mongodb_uri
@@ -176,7 +176,7 @@ LINGO_API_KEY=your_lingo_api_key
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 flowtalk/
@@ -192,7 +192,7 @@ flowtalk/
 
 ---
 
-## 📞 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |---------|-------------|----------------|
@@ -205,14 +205,14 @@ POST | /api/communities | Create community |
 
 ---
 
-## 👤 Author
+## Author
 
 Tejas Rawool  
 https://github.com/TejasRawool186
 
 ---
 
-## 📄 License
+## License
 
 MIT License — see LICENSE file for details.
 
