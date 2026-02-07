@@ -1,6 +1,6 @@
 # 🌐 FlowTalk — Smart Multilingual Communication Platform
 
-![banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=🌐%20FlowTalk&fontSize=60&fontAlignY=35&animation=twinkling&fontColor=ffffff&desc=Real-Time%20Multilingual%20Community%20Chat)
+![banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=%20FlowTalk&fontSize=60&fontAlignY=35&animation=twinkling&fontColor=ffffff&desc=Real-Time%20Multilingual%20Community%20Chat)
 
 ![Next.js](https://img.shields.io/badge/Next.js-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-blue?logo=react)
@@ -218,4 +218,4 @@ MIT License — see LICENSE file for details.
 
 ---
 
-⭐ If FlowTalk helps break language barriers — give the repo a star!
+If FlowTalk helps break language barriers — give the repo a star!
