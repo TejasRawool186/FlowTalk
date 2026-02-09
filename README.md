@@ -19,7 +19,7 @@ FlowTalk is a real-time multilingual chat platform that breaks language barriers
 
 ## Key Features
 
-- Real-time translation for 100+ languages  
+- Real-time translation for 12+ languages  
 - Smart glossary preservation for technical terms  
 - Multilingual voice messaging with transcription  
 - Animated emoji reactions  
