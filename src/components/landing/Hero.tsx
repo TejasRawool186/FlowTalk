@@ -76,6 +76,7 @@ export function Hero({ onStart }: { onStart: () => void }) {
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                             className="px-8 py-4 bg-white border border-slate-200 rounded-full font-bold text-lg text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
                         >
                             View Features

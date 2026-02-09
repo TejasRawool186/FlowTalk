@@ -44,7 +44,7 @@ const features = [
 
 export function Features() {
     return (
-        <div className="py-24 bg-slate-50 text-slate-900 relative overflow-hidden">
+        <div id="features" className="py-24 bg-slate-50 text-slate-900 relative overflow-hidden">
             {/* Subtle Background Decorations */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent" />
